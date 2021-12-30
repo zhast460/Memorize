@@ -8,122 +8,43 @@
 import SwiftUI
 
 struct ContentView: View {
-
-        
-
-    var vehicles = ["🚒", "✈️", "🚐", "🚝", "🚤", "🚇","🛸","🛶"];
-    var faces = ["😀", "😃", "😄", "😁", "😆", "😅","😂","🤣"];
-    var animals = ["🐶", "🐱", "🐭", "🐹", "🐰", "🦊","🐻","🐼"];
-    
-    @State var count = 8;
-    @State var arrayToDisplay: [String];
-    
-    init() {
-        arrayToDisplay = animals;
-    }
+    @ObservedObject var viewModel: EmojiMemoryGame
     
     var body: some View {
-        VStack {
-            Title()
-            ScrollView{
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 65))]) {
-                    ForEach(arrayToDisplay[..<count], id: \.self, content: { emoji in
-                        CardView(content: emoji).aspectRatio(2/3, contentMode: .fit)
-                    })
+        ScrollView{
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 65))]) {
+                ForEach(viewModel.cards) { card in
+                    CardView(card: card)
+                        .aspectRatio(2/3, contentMode: .fit)
+                        .onTapGesture {
+                            viewModel.choose(card)
+                        }
                 }
             }
-            .padding(.horizontal)
-            .foregroundColor(.red)
-            Spacer()
-            HStack {
-                vehiclesTheme
-                Spacer()
-                facesTheme
-                Spacer()
-                animalsTheme
-            }
-            .foregroundColor(.blue)
-            .padding(.horizontal, 75)
-            .font(.largeTitle)
         }
-    }
-    
-    var vehiclesTheme: some View {
-        VStack {
-            Image(systemName: "car")
-            Text("Vehicles")
-                .font(.caption)
-                
-        }
-        .onTapGesture {
-            arrayToDisplay = shuffle(vehicles)
-        }
-    }
-    
-    var facesTheme: some View {
-        VStack {
-            Image(systemName: "face.smiling")
-            Text("Faces")
-                .font(.caption)
-        }
-        .onTapGesture {
-            arrayToDisplay = shuffle(faces)
-        }
-    }
-    
-    var animalsTheme: some View {
-        VStack {
-            Image(systemName: "person")
-            Text("Animals")
-                .font(.caption)
-        }
-        .onTapGesture {
-            arrayToDisplay = shuffle(animals)
-        }
-    }
-    
-    func shuffle(_ incoming: [String]) -> [String] {
-        var res: [String] = []
-        var array = incoming
-        while array.count > 0 {
-            let nextIdx = Int.random(in: 0..<array.count)
-            res.append(array[nextIdx])
-            array.remove(at: nextIdx)
-        }
-        return res
-    }
-}
-
-struct Title: View {
-    var body: some View {
-        Text("Memorized!")
-            .font(Font.largeTitle)
+        .foregroundColor(.red)
+        .padding(.horizontal)
     }
 }
 
 struct CardView: View {
-    @State var isFaceUp: Bool = true
-    var content: String
+    let card: MemoryGame<String>.Card
+
     var body: some View {
         ZStack {
             let shape = RoundedRectangle(cornerRadius: 20)
-            if isFaceUp {
+            if card.isFaceUp {
                 shape.strokeBorder(lineWidth: 3)
-                Text(content)
+                Text(card.content)
                     .font(.largeTitle)
+            } else if card.isMatched {
+                shape.opacity(0)
             } else {
                 shape.fill()
             }
         }
-        .onTapGesture {
-            isFaceUp = !isFaceUp
-        }
     }
 }
-
-
-
-
 
 
 
@@ -135,9 +56,11 @@ struct CardView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            ContentView()
+            let game = EmojiMemoryGame()
+            
+            ContentView(viewModel: game)
                 
-            ContentView()
+            ContentView(viewModel: game)
                 .preferredColorScheme(.dark)
         }
     }
