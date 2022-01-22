@@ -11,19 +11,34 @@ struct ContentView: View {
     @ObservedObject var viewModel: EmojiMemoryGame
     
     var body: some View {
-        ScrollView{
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 65))]) {
-                ForEach(viewModel.cards) { card in
-                    CardView(card: card)
-                        .aspectRatio(2/3, contentMode: .fit)
-                        .onTapGesture {
-                            viewModel.choose(card)
-                        }
+        VStack{
+            Text(viewModel.gameTitle)
+                .font(.largeTitle)
+            ScrollView{
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 65))]) {
+                    ForEach(viewModel.cards) { card in
+                        CardView(card: card)
+                            .aspectRatio(2/3, contentMode: .fit)
+                            .onTapGesture {
+                                viewModel.choose(card)
+                            }
+                    }
                 }
             }
+            .foregroundColor(viewModel.themeColor)
+            .padding(.horizontal)
+            HStack{
+                Text("Score: " + String(viewModel.score))
+                Spacer()
+                Text("New Game")
+                    .foregroundColor(.blue)
+                    .onTapGesture {
+                        viewModel.newGame()
+                    }
+            }
+            .font(.title)
+            .padding(.horizontal, 20)
         }
-        .foregroundColor(.red)
-        .padding(.horizontal)
     }
 }
 
